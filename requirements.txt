@@ -1,0 +1,45 @@
+# Core Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# AI/ML Libraries
+transformers==4.35.2
+torch>=2.2.0
+torchvision>=0.17.0
+tensorflow>=2.15.0
+opencv-python==4.8.1.78
+pillow>=10.1.0
+numpy>=1.25.2
+scikit-learn>=1.3.2
+
+# NLP Libraries
+spacy==3.7.2
+nltk==3.8.1
+textblob==0.17.1
+
+# Database
+sqlalchemy==2.0.23
+
+# HTTP Client
+httpx==0.25.2
+requests==2.31.0
+
+# Data Validation
+pydantic==2.5.0
+
+# Logging and Monitoring
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Image Processing
+imageio==2.33.0
+
+# Async Support
+aiofiles==23.2.1
