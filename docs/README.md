@@ -60,7 +60,7 @@ A scalable, microservices-based content moderation system that uses AI to automa
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/AI-powered-content-Moderation-system.git
+   git clone https://github.com/MDHaggai/AI-powered-content-Moderation-system.git
    cd AI-powered-content-Moderation-system
    ```
 
@@ -355,9 +355,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, issues, or contributions:
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/AI-powered-content-Moderation-system/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/AI-powered-content-Moderation-system/discussions)
-- **Email**: your-email@example.com
+- **Issues**: [GitHub Issues](https://github.com/MDHaggai/AI-powered-content-Moderation-system/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/MDHaggai/AI-powered-content-Moderation-system/discussions)
+- **Email**: haggairameni@gmail.com
 
 ## 🗺️ Roadmap
 
