@@ -5,7 +5,6 @@ Functions for cleaning and preparing text for moderation
 
 import re
 import string
-from typing import str
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,0 +1,804 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - AI Content Moderation{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Advanced CSS Variables */
+    :root {
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --gradient-warning: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.8);
+        --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+        --shadow-heavy: 0 15px 35px rgba(31, 38, 135, 0.5);
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        overflow-x: hidden;
+        background: var(--gradient-primary);
+        min-height: 100vh;
+        position: relative;
+    }
+
+    /* Animated Background with more complexity */
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -3;
+        background: var(--gradient-primary);
+        animation: gradientShift 20s ease infinite;
+    }
+
+    .animated-bg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvZz48L3N2Zz4=') repeat;
+        opacity: 0.1;
+        animation: patternMove 60s linear infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        20% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        40% { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        60% { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        80% { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    }
+
+    @keyframes patternMove {
+        0% { transform: translateX(0) translateY(0); }
+        100% { transform: translateX(40px) translateY(40px); }
+    }
+            0 12px 35px rgba(31, 38, 135, 0.4);
+        transform: scale(0.9) translateY(50px);
+        opacity: 0;
+        animation: scaleInUp 1s ease forwards 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .register-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-gradient);
+        animation: slideIn 2s ease forwards;
+    }
+
+    .register-card::after {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 25px;
+        pointer-events: none;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+    }
+
+    @keyframes scaleInUp {
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .register-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+
+    .register-logo {
+        width: 90px;
+        height: 90px;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        position: relative;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .register-logo::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: var(--accent-gradient);
+        border-radius: 50%;
+        z-index: -1;
+        animation: rotate 10s linear infinite;
+    }
+
+    .register-logo::after {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        right: -20px;
+        bottom: -20px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        z-index: -2;
+        animation: rotate 15s linear infinite reverse;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .register-logo i {
+        font-size: 2.2rem;
+        color: white;
+        z-index: 1;
+    }
+
+    .register-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes titleGlow {
+        from { 
+            filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.5));
+            transform: scale(1);
+        }
+        to { 
+            filter: drop-shadow(0 0 25px rgba(102, 126, 234, 0.9));
+            transform: scale(1.02);
+        }
+    }
+
+    .register-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 15px;
+        color: white;
+        padding: 1rem 1.25rem 1rem 3rem;
+        font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        position: relative;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #667eea;
+        box-shadow: 
+            0 0 0 0.25rem rgba(102, 126, 234, 0.3),
+            0 10px 40px rgba(102, 126, 234, 0.2);
+        color: white;
+        transform: translateY(-3px);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-control.is-valid {
+        border-color: #43e97b;
+        background: rgba(67, 233, 123, 0.1);
+    }
+
+    .form-control.is-invalid {
+        border-color: #f093fb;
+        background: rgba(240, 147, 251, 0.1);
+        animation: shake 0.3s ease-in-out;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.6);
+        z-index: 2;
+        transition: all 0.4s ease;
+        font-size: 1.1rem;
+    }
+
+    .form-control:focus ~ .input-icon {
+        color: #667eea;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .password-strength {
+        margin-top: 0.5rem;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .password-strength.show {
+        opacity: 1;
+    }
+
+    .strength-bar {
+        height: 100%;
+        width: 0%;
+        background: var(--secondary-gradient);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .strength-bar.weak { 
+        width: 25%; 
+        background: var(--secondary-gradient);
+    }
+
+    .strength-bar.fair { 
+        width: 50%; 
+        background: var(--warning-gradient);
+    }
+
+    .strength-bar.good { 
+        width: 75%; 
+        background: var(--accent-gradient);
+    }
+
+    .strength-bar.strong { 
+        width: 100%; 
+        background: var(--success-gradient);
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 1.2rem;
+        border: none;
+        border-radius: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: var(--primary-gradient);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        margin-top: 1.5rem;
+        cursor: pointer;
+    }
+
+    .btn-register::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.5);
+    }
+
+    .btn-register:hover::before {
+        left: 100%;
+    }
+
+    .btn-register:active {
+        transform: translateY(-2px);
+    }
+
+    .register-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .register-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .register-footer a::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary-gradient);
+        transition: width 0.3s ease;
+    }
+
+    .register-footer a:hover::after {
+        width: 100%;
+    }
+
+    .register-footer a:hover {
+        color: #764ba2;
+        transform: translateY(-2px);
+    }
+
+    .benefits-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .benefits-title {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        animation: fadeInUp 0.6s ease forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    .benefit-item:nth-child(1) { animation-delay: 1s; }
+    .benefit-item:nth-child(2) { animation-delay: 1.2s; }
+    .benefit-item:nth-child(3) { animation-delay: 1.4s; }
+    .benefit-item:nth-child(4) { animation-delay: 1.6s; }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .benefit-icon {
+        width: 35px;
+        height: 35px;
+        background: var(--success-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        font-size: 0.9rem;
+        animation: iconBounce 2s ease-in-out infinite;
+    }
+
+    @keyframes iconBounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .floating-shapes {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .shape {
+        position: absolute;
+        opacity: 0.1;
+        animation: floatShape 25s infinite linear;
+    }
+
+    @keyframes floatShape {
+        0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 0.1;
+        }
+        90% {
+            opacity: 0.1;
+        }
+        100% {
+            transform: translateY(-100px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    .alert {
+        background: rgba(240, 147, 251, 0.15);
+        border: 1px solid rgba(240, 147, 251, 0.3);
+        border-radius: 12px;
+        color: #ff6b7a;
+        margin-bottom: 1.5rem;
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    @keyframes slideInDown {
+        from {
+            transform: translateY(-100px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    /* Loading animation */
+    .btn-register.loading {
+        pointer-events: none;
+    }
+
+    .btn-register.loading::after {
+        content: '';
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    @keyframes spin {
+        0% { transform: translateY(-50%) rotate(0deg); }
+        100% { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .register-card {
+            margin: 1rem;
+            padding: 2rem;
+        }
+        
+        .register-title {
+            font-size: 1.7rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .benefits-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block public_content %}
+<div class="floating-shapes">
+    <div class="shape" style="left: 5%; width: 30px; height: 30px; background: rgba(102, 126, 234, 0.1); border-radius: 50%; animation-delay: 0s;"></div>
+    <div class="shape" style="left: 15%; width: 20px; height: 20px; background: rgba(240, 147, 251, 0.1); animation-delay: 3s;"></div>
+    <div class="shape" style="left: 25%; width: 25px; height: 25px; background: rgba(74, 192, 254, 0.1); border-radius: 50%; animation-delay: 6s;"></div>
+    <div class="shape" style="left: 35%; width: 15px; height: 15px; background: rgba(67, 233, 123, 0.1); animation-delay: 9s;"></div>
+    <div class="shape" style="left: 45%; width: 35px; height: 35px; background: rgba(102, 126, 234, 0.1); border-radius: 50%; animation-delay: 12s;"></div>
+    <div class="shape" style="left: 55%; width: 18px; height: 18px; background: rgba(240, 147, 251, 0.1); animation-delay: 15s;"></div>
+    <div class="shape" style="left: 65%; width: 28px; height: 28px; background: rgba(74, 192, 254, 0.1); border-radius: 50%; animation-delay: 18s;"></div>
+    <div class="shape" style="left: 75%; width: 22px; height: 22px; background: rgba(67, 233, 123, 0.1); animation-delay: 21s;"></div>
+    <div class="shape" style="left: 85%; width: 16px; height: 16px; background: rgba(102, 126, 234, 0.1); border-radius: 50%; animation-delay: 24s;"></div>
+</div>
+
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="register-logo">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="register-title">Join Us Today</h1>
+            <p class="register-subtitle">Create your account and start moderating content with AI</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" id="registerForm">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="Choose username" required>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <div class="input-group">
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="your@email.com" required>
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password1">Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password1" name="password1" 
+                           placeholder="Create strong password" required>
+                    <i class="fas fa-lock input-icon"></i>
+                </div>
+                <div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password2">Confirm Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password2" name="password2" 
+                           placeholder="Confirm your password" required>
+                    <i class="fas fa-lock-open input-icon"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-register" id="registerBtn">
+                <i class="fas fa-user-plus me-2"></i>Create Account
+            </button>
+        </form>
+
+        <div class="register-footer">
+            <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Sign in here</a></p>
+        </div>
+
+        <div class="benefits-section">
+            <h6 class="benefits-title">What You'll Get</h6>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <span>AI-Powered Moderation</span>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <span>Real-time Processing</span>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <span>Free API Access</span>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <span>Detailed Analytics</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
+    const strengthIndicator = document.getElementById('passwordStrength');
+    const strengthBar = document.getElementById('strengthBar');
+    
+    // Password strength checker
+    password1.addEventListener('input', function() {
+        const password = this.value;
+        const strength = checkPasswordStrength(password);
+        
+        if (password.length > 0) {
+            strengthIndicator.classList.add('show');
+        } else {
+            strengthIndicator.classList.remove('show');
+        }
+        
+        strengthBar.className = 'strength-bar ' + strength;
+    });
+    
+    function checkPasswordStrength(password) {
+        let score = 0;
+        
+        if (password.length >= 8) score++;
+        if (password.match(/[a-z]/)) score++;
+        if (password.match(/[A-Z]/)) score++;
+        if (password.match(/[0-9]/)) score++;
+        if (password.match(/[^a-zA-Z0-9]/)) score++;
+        
+        if (score === 0) return 'weak';
+        if (score <= 2) return 'weak';
+        if (score === 3) return 'fair';
+        if (score === 4) return 'good';
+        return 'strong';
+    }
+    
+    // Real-time validation
+    const inputs = [document.getElementById('username'), document.getElementById('email'), password1, password2];
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', validateField);
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                validateField.call(this);
+            }
+        });
+    });
+    
+    function validateField() {
+        const value = this.value.trim();
+        let isValid = true;
+        
+        if (this.type === 'email') {
+            isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        } else if (this.id === 'password2') {
+            isValid = value === password1.value;
+        } else {
+            isValid = value.length >= 3;
+        }
+        
+        if (isValid) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    }
+    
+    // Form submission
+    form.addEventListener('submit', function() {
+        registerBtn.classList.add('loading');
+        registerBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Creating Account...';
+    });
+    
+    // Add floating shapes animation
+    function createShape() {
+        const shape = document.createElement('div');
+        shape.className = 'shape';
+        
+        const size = Math.random() * 30 + 10;
+        const isCircle = Math.random() > 0.5;
+        
+        shape.style.left = Math.random() * 100 + '%';
+        shape.style.width = size + 'px';
+        shape.style.height = size + 'px';
+        shape.style.background = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.1)`;
+        shape.style.borderRadius = isCircle ? '50%' : '0';
+        shape.style.animationDelay = Math.random() * 25 + 's';
+        
+        document.querySelector('.floating-shapes').appendChild(shape);
+        
+        // Remove shape after animation
+        setTimeout(() => {
+            shape.remove();
+        }, 25000);
+    }
+    
+    // Create shapes periodically
+    setInterval(createShape, 3000);
+});
+</script>
+{% endblock %}

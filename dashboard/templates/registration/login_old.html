@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - AI Content Moderation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 450px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .auth-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .auth-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-control {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: var(--text-primary);
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        color: var(--text-primary);
+    }
+    
+    .form-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .btn-auth {
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: white;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+    }
+    
+    .auth-link {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+    
+    .auth-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .auth-link a:hover {
+        text-decoration: underline;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .features-preview {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .features-preview h6 {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .feature-tags {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .feature-tag {
+        background: rgba(74, 144, 226, 0.1);
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block public_content %}
+<div class="container-fluid">
+    <div class="row min-vh-100 align-items-center">
+        <div class="col-lg-6 d-none d-lg-block">
+            <div class="hero-section text-center">
+                <div class="hero-content">
+                    <h1 class="hero-title">Welcome Back</h1>
+                    <p class="hero-subtitle">Access your AI-powered content moderation dashboard</p>
+                    <div class="features-grid mt-4">
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <h6>Real-time Protection</h6>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-brain"></i>
+                            <h6>AI-Powered Analysis</h6>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-line"></i>
+                            <h6>Advanced Analytics</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2 class="auth-title">Sign In</h2>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="Username" required>
+                            <label for="username">Username</label>
+                        </div>
+                        
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Password" required>
+                            <label for="password">Password</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-auth">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                        
+                        <div class="auth-link">
+                            Don't have an account? <a href="{% url 'register' %}">Sign up here</a>
+                        </div>
+                    </form>
+                    
+                    <div class="features-preview">
+                        <h6>What you'll get access to:</h6>
+                        <div class="feature-tags">
+                            <span class="feature-tag">Text Moderation</span>
+                            <span class="feature-tag">Image Analysis</span>
+                            <span class="feature-tag">API Keys</span>
+                            <span class="feature-tag">Usage Analytics</span>
+                            <span class="feature-tag">Real-time Testing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

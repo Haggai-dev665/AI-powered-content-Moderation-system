@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block page_title %}API Keys{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-key"></i> API Key Management</h5>
+            </div>
+            <div class="card-body">
+                <!-- API Key Display -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Your API Key</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control font-monospace" 
+                               id="apiKeyInput" value="{{ profile.api_key }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" 
+                                onclick="toggleApiKeyVisibility()" id="toggleBtn">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" 
+                                onclick="copyApiKey()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle"></i> 
+                        Keep your API key secure. Do not share it publicly or commit it to version control.
+                    </div>
+                </div>
+
+                <!-- API Key Status -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">API Key Status</h6>
+                            <span class="badge {{ profile.is_api_active|yesno:'bg-success,bg-danger' }} fs-6">
+                                {% if profile.is_api_active %}
+                                    <i class="fas fa-check-circle"></i> Active
+                                {% else %}
+                                    <i class="fas fa-times-circle"></i> Inactive
+                                {% endif %}
+                            </span>
+                        </div>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" name="toggle_status" 
+                                    class="btn btn-{{ profile.is_api_active|yesno:'warning,success' }}">
+                                {% if profile.is_api_active %}
+                                    <i class="fas fa-pause"></i> Deactivate
+                                {% else %}
+                                    <i class="fas fa-play"></i> Activate
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Usage Statistics -->
+                <div class="mb-4">
+                    <h6>Usage Statistics</h6>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="border rounded p-3 mb-3">
+                                <h4 class="text-primary">{{ profile.api_calls_count }}</h4>
+                                <small class="text-muted">Calls Used</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="border rounded p-3 mb-3">
+                                <h4 class="text-success">{{ profile.api_calls_limit }}</h4>
+                                <small class="text-muted">Monthly Limit</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="border rounded p-3 mb-3">
+                                {% with remaining=profile.api_calls_limit|add:"-"|add:profile.api_calls_count %}
+                                <h4 class="text-info">{{ remaining }}</h4>
+                                {% endwith %}
+                                <small class="text-muted">Remaining</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% with usage_percentage=profile.api_calls_count|floatformat:0|add:"0"|mul:100|div:profile.api_calls_limit %}
+                    <div class="progress mb-2" style="height: 15px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ usage_percentage }}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">0</small>
+                        <small class="text-muted">{{ usage_percentage|floatformat:1 }}% used</small>
+                        <small class="text-muted">{{ profile.api_calls_limit }}</small>
+                    </div>
+                    {% endwith %}
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3">
+                    <form method="post" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" name="regenerate" 
+                                class="btn btn-warning w-100"
+                                onclick="return confirm('Are you sure? This will invalidate your current API key.')">
+                            <i class="fas fa-sync-alt"></i> Regenerate Key
+                        </button>
+                    </form>
+                    <a href="{% url 'documentation' %}" class="btn btn-outline-primary" style="flex: 1;">
+                        <i class="fas fa-book"></i> View Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Guidelines -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Usage Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shield-alt text-success"></i> Security Best Practices</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Store API keys securely</li>
+                            <li><i class="fas fa-check text-success"></i> Use environment variables</li>
+                            <li><i class="fas fa-check text-success"></i> Regenerate keys periodically</li>
+                            <li><i class="fas fa-check text-success"></i> Monitor usage regularly</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-exclamation-triangle text-warning"></i> Important Notes</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-times text-danger"></i> Don't commit keys to Git</li>
+                            <li><i class="fas fa-times text-danger"></i> Don't share keys publicly</li>
+                            <li><i class="fas fa-times text-danger"></i> Don't hardcode in applications</li>
+                            <li><i class="fas fa-times text-danger"></i> Don't exceed rate limits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Limits -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> Rate Limits</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Limit Type</th>
+                                <th>Free Tier</th>
+                                <th>Current Usage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Monthly Requests</td>
+                                <td>{{ profile.api_calls_limit }} requests</td>
+                                <td>{{ profile.api_calls_count }} used</td>
+                            </tr>
+                            <tr>
+                                <td>Rate Limit</td>
+                                <td>60 requests/minute</td>
+                                <td>No current restrictions</td>
+                            </tr>
+                            <tr>
+                                <td>File Size (Images)</td>
+                                <td>10 MB maximum</td>
+                                <td>No current restrictions</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleApiKeyVisibility() {
+    const input = document.getElementById('apiKeyInput');
+    const icon = document.getElementById('toggleIcon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+function copyApiKey() {
+    const input = document.getElementById('apiKeyInput');
+    input.select();
+    input.setSelectionRange(0, 99999); // For mobile devices
+    
+    navigator.clipboard.writeText(input.value).then(function() {
+        // Show temporary success message
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(function(err) {
+        alert('Could not copy API key: ' + err);
+    });
+}
+</script>
+{% endblock %}

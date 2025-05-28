@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="stat-number">{{ total_requests }}</div>
+            <div class="stat-label">Total Requests</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="stat-number">{{ text_requests }}</div>
+            <div class="stat-label">Text Moderation</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="stat-number">{{ image_requests }}</div>
+            <div class="stat-label">Image Moderation</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="stat-number">{{ flagged_content }}</div>
+            <div class="stat-label">Flagged Content</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- API Usage -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> API Usage</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-semibold">Monthly Limit</span>
+                    <span class="text-muted">{{ profile.api_calls_count }} / {{ profile.api_calls_limit }}</span>
+                </div>
+                <div class="progress mb-3" style="height: 15px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ usage_percentage }}%"></div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ profile.api_calls_count }}</h4>
+                        <small class="text-muted">Used</small>
+                    </div>
+                    <div class="col-6">
+                        {% with remaining=profile.api_calls_limit|add:"-"|add:profile.api_calls_count %}
+                        <h4 class="text-success">{{ remaining }}</h4>
+                        {% endwith %}
+                        <small class="text-muted">Remaining</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'test_moderation' %}" class="btn btn-primary">
+                        <i class="fas fa-vial"></i> Test Moderation
+                    </a>
+                    <a href="{% url 'api_keys' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-key"></i> Manage API Keys
+                    </a>
+                    <a href="{% url 'documentation' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-book"></i> View Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Activity</h5>
+                <a href="{% url 'history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Result</th>
+                                    <th>Confidence</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in recent_requests %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-{% if request.content_type == 'text' %}comment{% else %}image{% endif %}"></i>
+                                            {{ request.content_type|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if request.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif request.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if request.is_appropriate is not None %}
+                                            {% if request.is_appropriate %}
+                                                <span class="badge bg-success">Appropriate</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Flagged</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if request.confidence_score is not None %}
+                                            {{ request.confidence_score|floatformat:2 }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ request.created_at|timesince }} ago</small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewDetails('{{ request.id }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No recent activity</h5>
+                        <p class="text-muted">Start by testing the moderation API</p>
+                        <a href="{% url 'test_moderation' %}" class="btn btn-primary">
+                            <i class="fas fa-vial"></i> Test Now
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Status -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-server"></i> API Service Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="status-indicator bg-success me-3"></div>
+                            <div>
+                                <h6 class="mb-0">API Gateway</h6>
+                                <small class="text-muted">Operational</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="status-indicator bg-success me-3"></div>
+                            <div>
+                                <h6 class="mb-0">Text Moderation</h6>
+                                <small class="text-muted">Operational</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="status-indicator bg-success me-3"></div>
+                            <div>
+                                <h6 class="mb-0">Image Moderation</h6>
+                                <small class="text-muted">Operational</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
+
+<script>
+function viewDetails(requestId) {
+    // Implementation for viewing request details
+    alert('Viewing details for request: ' + requestId);
+    // In a real implementation, this would open a modal or navigate to a detail page
+}
+</script>
+{% endblock %}

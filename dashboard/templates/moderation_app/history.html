@@ -1,0 +1,659 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Moderation History - AI Content Moderation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-header {
+        background: var(--gradient-primary);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+    
+    .history-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .filters-section {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .form-group label {
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control, .form-select {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        color: var(--text-primary);
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        color: var(--text-primary);
+    }
+    
+    .history-table {
+        background: var(--card-bg);
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .table {
+        margin: 0;
+        color: var(--text-primary);
+    }
+    
+    .table thead th {
+        background: rgba(74, 144, 226, 0.1);
+        border: none;
+        color: var(--primary-color);
+        font-weight: 600;
+        padding: 1rem;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+    }
+    
+    .table tbody td {
+        border-color: rgba(255,255,255,0.05);
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(255,255,255,0.02);
+    }
+    
+    .content-preview {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .content-preview:hover {
+        color: var(--primary-color);
+    }
+    
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-toxic {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+    
+    .status-clean {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+    
+    .status-flagged {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+    
+    .confidence-bar {
+        width: 60px;
+        height: 8px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .confidence-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .confidence-high {
+        background: var(--gradient-primary);
+    }
+    
+    .confidence-medium {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+    }
+    
+    .confidence-low {
+        background: linear-gradient(135deg, #6c757d, #495057);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .pagination {
+        background: var(--card-bg);
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+        overflow: hidden;
+    }
+    
+    .page-item .page-link {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        padding: 0.75rem 1rem;
+    }
+    
+    .page-item.active .page-link {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .page-item .page-link:hover {
+        background: rgba(255,255,255,0.05);
+        color: var(--primary-color);
+    }
+    
+    .export-btn {
+        background: var(--gradient-secondary);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .export-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+    }
+    
+    .detail-modal .modal-content {
+        background: var(--card-bg);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 15px;
+    }
+    
+    .detail-modal .modal-header {
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .detail-modal .modal-title {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .detail-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-section h6 {
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .detail-content {
+        background: rgba(255,255,255,0.02);
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid rgba(255,255,255,0.05);
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+    
+    .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .analysis-item {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255,255,255,0.02);
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .analysis-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+    
+    .analysis-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="history-header">
+        <h1><i class="fas fa-history me-3"></i>Moderation History</h1>
+        <p class="mb-0">Track and analyze all your content moderation requests</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="history-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_requests|default:0 }}</div>
+            <div class="stat-label">Total Requests</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.toxic_count|default:0 }}</div>
+            <div class="stat-label">Toxic Content</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.clean_count|default:0 }}</div>
+            <div class="stat-label">Clean Content</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.avg_confidence|default:0|floatformat:1 }}%</div>
+            <div class="stat-label">Avg Confidence</div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-section">
+        <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filters</h5>
+        <form method="get" class="filter-row">
+            <div class="form-group">
+                <label for="content_type">Content Type</label>
+                <select name="content_type" id="content_type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="text" {% if request.GET.content_type == 'text' %}selected{% endif %}>Text</option>
+                    <option value="image" {% if request.GET.content_type == 'image' %}selected{% endif %}>Image</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="result">Result</label>
+                <select name="result" id="result" class="form-select">
+                    <option value="">All Results</option>
+                    <option value="toxic" {% if request.GET.result == 'toxic' %}selected{% endif %}>Toxic</option>
+                    <option value="clean" {% if request.GET.result == 'clean' %}selected{% endif %}>Clean</option>
+                    <option value="flagged" {% if request.GET.result == 'flagged' %}selected{% endif %}>Flagged</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="date_from">From Date</label>
+                <input type="date" name="date_from" id="date_from" class="form-control" 
+                       value="{{ request.GET.date_from }}">
+            </div>
+            <div class="form-group">
+                <label for="date_to">To Date</label>
+                <input type="date" name="date_to" id="date_to" class="form-control" 
+                       value="{{ request.GET.date_to }}">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Filter
+                </button>
+                <a href="{% url 'history' %}" class="btn btn-secondary ms-2">
+                    <i class="fas fa-times me-2"></i>Clear
+                </a>
+                <button type="button" class="btn export-btn ms-2" onclick="exportData()">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- History Table -->
+    <div class="history-table">
+        {% if requests %}
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Type</th>
+                        <th>Content</th>
+                        <th>Result</th>
+                        <th>Confidence</th>
+                        <th>Processing Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in requests %}
+                        <tr>
+                            <td>
+                                <div>{{ request.created_at|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ request.created_at|time:"H:i:s" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-{{ request.content_type|yesno:'comment,image' }} me-1"></i>
+                                    {{ request.content_type|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="content-preview" 
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#detailModal"
+                                     data-request-id="{{ request.id }}"
+                                     title="Click to view details">
+                                    {% if request.content_type == 'text' %}
+                                        {{ request.content|truncatechars:50 }}
+                                    {% else %}
+                                        <i class="fas fa-image me-1"></i>Image file
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ request.result|lower }}">
+                                    {{ request.result|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="confidence-bar me-2">
+                                        <div class="confidence-fill 
+                                            {% if request.confidence >= 0.8 %}confidence-high
+                                            {% elif request.confidence >= 0.5 %}confidence-medium
+                                            {% else %}confidence-low{% endif %}"
+                                             style="width: {{ request.confidence|floatformat:0 }}%"></div>
+                                    </div>
+                                    <small>{{ request.confidence|floatformat:1 }}%</small>
+                                </div>
+                            </td>
+                            <td>
+                                {% if request.processing_time %}
+                                    {{ request.processing_time|floatformat:3 }}s
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#detailModal"
+                                        data-request-id="{{ request.id }}"
+                                        title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <div class="pagination-wrapper">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page=1">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h4>No moderation history yet</h4>
+                <p>Start testing content moderation to see your history here.</p>
+                <a href="{% url 'test_moderation' %}" class="btn btn-primary">
+                    <i class="fas fa-play me-2"></i>Start Testing
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade detail-modal" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel">
+                    <i class="fas fa-info-circle me-2"></i>Moderation Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailModalBody">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Modal detail loading
+    document.addEventListener('DOMContentLoaded', function() {
+        const detailModal = document.getElementById('detailModal');
+        detailModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const requestId = button.getAttribute('data-request-id');
+            
+            // Load request details
+            loadRequestDetails(requestId);
+        });
+    });
+    
+    function loadRequestDetails(requestId) {
+        const modalBody = document.getElementById('detailModalBody');
+        
+        fetch(`/api/moderation-request/${requestId}/`)
+            .then(response => response.json())
+            .then(data => {
+                modalBody.innerHTML = generateDetailHTML(data);
+            })
+            .catch(error => {
+                modalBody.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading details: ${error.message}
+                    </div>
+                `;
+            });
+    }
+    
+    function generateDetailHTML(data) {
+        const createdAt = new Date(data.created_at).toLocaleString();
+        
+        let contentSection = '';
+        if (data.content_type === 'text') {
+            contentSection = `
+                <div class="detail-section">
+                    <h6><i class="fas fa-comment me-2"></i>Text Content</h6>
+                    <div class="detail-content">${data.content}</div>
+                </div>
+            `;
+        } else {
+            contentSection = `
+                <div class="detail-section">
+                    <h6><i class="fas fa-image me-2"></i>Image Content</h6>
+                    <div class="detail-content">
+                        <img src="${data.image_url}" alt="Moderated image" class="img-fluid rounded">
+                    </div>
+                </div>
+            `;
+        }
+        
+        let analysisSection = '';
+        if (data.analysis_details) {
+            const details = JSON.parse(data.analysis_details);
+            analysisSection = `
+                <div class="detail-section">
+                    <h6><i class="fas fa-chart-bar me-2"></i>Analysis Results</h6>
+                    <div class="analysis-grid">
+                        ${Object.entries(details).map(([key, value]) => `
+                            <div class="analysis-item">
+                                <div class="analysis-value">${typeof value === 'number' ? value.toFixed(3) : value}</div>
+                                <div class="analysis-label">${key.replace(/_/g, ' ')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="detail-section">
+                <h6><i class="fas fa-info-circle me-2"></i>Basic Information</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Date & Time:</strong><br>
+                        <span class="text-muted">${createdAt}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Content Type:</strong><br>
+                        <span class="badge bg-secondary">${data.content_type.toUpperCase()}</span>
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <strong>Result:</strong><br>
+                        <span class="status-badge status-${data.result.toLowerCase()}">${data.result.toUpperCase()}</span>
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <strong>Confidence:</strong><br>
+                        <span class="text-primary">${(data.confidence * 100).toFixed(1)}%</span>
+                    </div>
+                    ${data.processing_time ? `
+                    <div class="col-md-6 mt-2">
+                        <strong>Processing Time:</strong><br>
+                        <span class="text-muted">${data.processing_time.toFixed(3)}s</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            ${contentSection}
+            ${analysisSection}
+            
+            ${data.error_message ? `
+            <div class="detail-section">
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>Error Details</h6>
+                <div class="alert alert-danger">${data.error_message}</div>
+            </div>
+            ` : ''}
+        `;
+    }
+    
+    function exportData() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export', 'csv');
+        window.location.href = `${window.location.pathname}?${params.toString()}`;
+    }
+</script>
+{% endblock %}

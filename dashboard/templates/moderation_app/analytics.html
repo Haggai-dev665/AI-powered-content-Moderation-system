@@ -1,0 +1,855 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics - AI Content Moderation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-header {
+        background: var(--gradient-primary);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+    
+    .analytics-period {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .period-btn {
+        background: var(--card-bg);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: var(--text-primary);
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .period-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
+    .period-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .metric-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--gradient-primary);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .metric-change {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+    }
+    
+    .metric-change.positive {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .metric-change.negative {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+    
+    .metric-change.neutral {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .metric-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-description {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    .charts-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .charts-section {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .chart-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .chart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    .insights-section {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .insights-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .insight-item {
+        background: rgba(255,255,255,0.02);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .insight-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .insight-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .insight-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .top-content-section {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .content-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255,255,255,0.02);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .content-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .content-rank {
+        width: 32px;
+        height: 32px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .content-details {
+        flex: 1;
+    }
+    
+    .content-text {
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .content-meta {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+    
+    .content-score {
+        text-align: right;
+    }
+    
+    .score-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .score-label {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+    
+    .export-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    .export-btn {
+        background: var(--gradient-secondary);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .export-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+    }
+    
+    .loading-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+    
+    .loading-state .spinner-border {
+        margin-bottom: 1rem;
+    }
+    
+    .no-data-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+    }
+    
+    .no-data-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="analytics-header">
+        <h1><i class="fas fa-chart-line me-3"></i>Analytics Dashboard</h1>
+        <p class="mb-0">Comprehensive insights into your content moderation performance</p>
+    </div>
+    
+    <!-- Time Period Selection -->
+    <div class="analytics-period">
+        <button class="period-btn active" data-period="7">Last 7 Days</button>
+        <button class="period-btn" data-period="30">Last 30 Days</button>
+        <button class="period-btn" data-period="90">Last 3 Months</button>
+        <button class="period-btn" data-period="365">Last Year</button>
+    </div>
+    
+    <!-- Key Metrics -->
+    <div class="metrics-grid" id="metricsGrid">
+        <div class="metric-card">
+            <div class="metric-header">
+                <div class="metric-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up me-1"></i>+12.5%
+                </div>
+            </div>
+            <div class="metric-value" id="totalRequests">-</div>
+            <div class="metric-label">Total Requests</div>
+            <div class="metric-description">Content moderation requests processed</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-header">
+                <div class="metric-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="metric-change negative">
+                    <i class="fas fa-arrow-down me-1"></i>-3.2%
+                </div>
+            </div>
+            <div class="metric-value" id="toxicContent">-</div>
+            <div class="metric-label">Toxic Content Detected</div>
+            <div class="metric-description">Harmful content successfully flagged</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-header">
+                <div class="metric-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up me-1"></i>+5.8%
+                </div>
+            </div>
+            <div class="metric-value" id="cleanContent">-</div>
+            <div class="metric-label">Clean Content</div>
+            <div class="metric-description">Content approved as safe</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-header">
+                <div class="metric-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="metric-change neutral">
+                    <i class="fas fa-minus me-1"></i>0.0%
+                </div>
+            </div>
+            <div class="metric-value" id="accuracy">-</div>
+            <div class="metric-label">Detection Accuracy</div>
+            <div class="metric-description">Overall model confidence average</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-header">
+                <div class="metric-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-down me-1"></i>-15.3%
+                </div>
+            </div>
+            <div class="metric-value" id="avgProcessingTime">-</div>
+            <div class="metric-label">Avg Processing Time</div>
+            <div class="metric-description">Time to analyze content</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-header">
+                <div class="metric-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div class="metric-change positive">
+                    <i class="fas fa-arrow-up me-1"></i>+8.9%
+                </div>
+            </div>
+            <div class="metric-value" id="apiUsage">-</div>
+            <div class="metric-label">API Calls</div>
+            <div class="metric-description">Total API requests made</div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">Requests Over Time</h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                            data-bs-toggle="dropdown">
+                        Daily
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-interval="daily">Daily</a></li>
+                        <li><a class="dropdown-item" href="#" data-interval="weekly">Weekly</a></li>
+                        <li><a class="dropdown-item" href="#" data-interval="monthly">Monthly</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="requestsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">Content Type Distribution</h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="contentTypeChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">Detection Results</h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="resultsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5 class="chart-title">Confidence Distribution</h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="confidenceChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Insights -->
+    <div class="insights-section">
+        <h5 class="insights-title">
+            <i class="fas fa-brain"></i>AI-Generated Insights
+        </h5>
+        <div id="insightsContainer">
+            <div class="insight-item">
+                <div class="insight-title">📈 Increasing Request Volume</div>
+                <div class="insight-description">
+                    Your content moderation requests have increased by 12.5% compared to the previous period. 
+                    This indicates growing engagement with your platform.
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">🛡️ Improved Detection Accuracy</div>
+                <div class="insight-description">
+                    The AI models show consistently high confidence scores (avg. 87.3%), indicating reliable 
+                    content classification across both text and image moderation.
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-title">⚡ Performance Optimization</div>
+                <div class="insight-description">
+                    Average processing time has decreased by 15.3%, showing improved system efficiency 
+                    and better user experience.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Flagged Content -->
+    <div class="top-content-section">
+        <h5 class="mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Most Flagged Content Types</h5>
+        <div id="topContentContainer">
+            <div class="content-item">
+                <div class="content-rank">1</div>
+                <div class="content-details">
+                    <div class="content-text">Hate speech and discriminatory language</div>
+                    <div class="content-meta">Text moderation • Last 7 days</div>
+                </div>
+                <div class="content-score">
+                    <div class="score-value">34</div>
+                    <div class="score-label">Instances</div>
+                </div>
+            </div>
+            
+            <div class="content-item">
+                <div class="content-rank">2</div>
+                <div class="content-details">
+                    <div class="content-text">Explicit/inappropriate images</div>
+                    <div class="content-meta">Image moderation • Last 7 days</div>
+                </div>
+                <div class="content-score">
+                    <div class="score-value">28</div>
+                    <div class="score-label">Instances</div>
+                </div>
+            </div>
+            
+            <div class="content-item">
+                <div class="content-rank">3</div>
+                <div class="content-details">
+                    <div class="content-text">Spam and promotional content</div>
+                    <div class="content-meta">Text moderation • Last 7 days</div>
+                </div>
+                <div class="content-score">
+                    <div class="score-value">19</div>
+                    <div class="score-label">Instances</div>
+                </div>
+            </div>
+            
+            <div class="content-item">
+                <div class="content-rank">4</div>
+                <div class="content-details">
+                    <div class="content-text">Violence and weapons</div>
+                    <div class="content-meta">Image moderation • Last 7 days</div>
+                </div>
+                <div class="content-score">
+                    <div class="score-value">12</div>
+                    <div class="score-label">Instances</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Section -->
+    <div class="export-section">
+        <h5 class="mb-3">Export Analytics Data</h5>
+        <button class="export-btn" onclick="exportData('pdf')">
+            <i class="fas fa-file-pdf me-2"></i>Export PDF Report
+        </button>
+        <button class="export-btn" onclick="exportData('csv')">
+            <i class="fas fa-file-csv me-2"></i>Export CSV Data
+        </button>
+        <button class="export-btn" onclick="exportData('json')">
+            <i class="fas fa-file-code me-2"></i>Export JSON Data
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let currentPeriod = 7;
+    let charts = {};
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initializePage();
+        setupEventListeners();
+    });
+    
+    function initializePage() {
+        loadAnalyticsData();
+        initializeCharts();
+    }
+    
+    function setupEventListeners() {
+        // Period selection
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentPeriod = parseInt(this.dataset.period);
+                loadAnalyticsData();
+            });
+        });
+    }
+    
+    function loadAnalyticsData() {
+        showLoading();
+        
+        fetch(`/api/analytics/?period=${currentPeriod}`)
+            .then(response => response.json())
+            .then(data => {
+                updateMetrics(data.metrics);
+                updateCharts(data.charts);
+                updateInsights(data.insights);
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error loading analytics:', error);
+                showError('Failed to load analytics data');
+            });
+    }
+    
+    function updateMetrics(metrics) {
+        document.getElementById('totalRequests').textContent = metrics.total_requests || '0';
+        document.getElementById('toxicContent').textContent = metrics.toxic_content || '0';
+        document.getElementById('cleanContent').textContent = metrics.clean_content || '0';
+        document.getElementById('accuracy').textContent = `${(metrics.accuracy || 0).toFixed(1)}%`;
+        document.getElementById('avgProcessingTime').textContent = `${(metrics.avg_processing_time || 0).toFixed(2)}s`;
+        document.getElementById('apiUsage').textContent = metrics.api_usage || '0';
+    }
+    
+    function initializeCharts() {
+        // Requests over time chart
+        const requestsCtx = document.getElementById('requestsChart').getContext('2d');
+        charts.requests = new Chart(requestsCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Requests',
+                    data: [],
+                    borderColor: 'rgb(74, 144, 226)',
+                    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e6ed'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    y: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                }
+            }
+        });
+        
+        // Content type distribution
+        const contentTypeCtx = document.getElementById('contentTypeChart').getContext('2d');
+        charts.contentType = new Chart(contentTypeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Text', 'Image'],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        'rgb(74, 144, 226)',
+                        'rgb(108, 117, 125)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e6ed'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Detection results
+        const resultsCtx = document.getElementById('resultsChart').getContext('2d');
+        charts.results = new Chart(resultsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Clean', 'Toxic', 'Flagged'],
+                datasets: [{
+                    label: 'Count',
+                    data: [],
+                    backgroundColor: [
+                        'rgb(40, 167, 69)',
+                        'rgb(220, 53, 69)',
+                        'rgb(255, 193, 7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    y: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                }
+            }
+        });
+        
+        // Confidence distribution
+        const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+        charts.confidence = new Chart(confidenceCtx, {
+            type: 'histogram',
+            data: {
+                labels: ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'],
+                datasets: [{
+                    label: 'Frequency',
+                    data: [],
+                    backgroundColor: 'rgba(74, 144, 226, 0.7)',
+                    borderColor: 'rgb(74, 144, 226)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e6ed'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    y: {
+                        ticks: { color: '#8b949e' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateCharts(chartData) {
+        // Update requests chart
+        if (chartData.requests) {
+            charts.requests.data.labels = chartData.requests.labels;
+            charts.requests.data.datasets[0].data = chartData.requests.data;
+            charts.requests.update();
+        }
+        
+        // Update content type chart
+        if (chartData.content_type) {
+            charts.contentType.data.datasets[0].data = chartData.content_type;
+            charts.contentType.update();
+        }
+        
+        // Update results chart
+        if (chartData.results) {
+            charts.results.data.datasets[0].data = chartData.results;
+            charts.results.update();
+        }
+        
+        // Update confidence chart
+        if (chartData.confidence) {
+            charts.confidence.data.datasets[0].data = chartData.confidence;
+            charts.confidence.update();
+        }
+    }
+    
+    function updateInsights(insights) {
+        if (!insights || insights.length === 0) return;
+        
+        const container = document.getElementById('insightsContainer');
+        container.innerHTML = insights.map(insight => `
+            <div class="insight-item">
+                <div class="insight-title">${insight.title}</div>
+                <div class="insight-description">${insight.description}</div>
+            </div>
+        `).join('');
+    }
+    
+    function showLoading() {
+        const metricsGrid = document.getElementById('metricsGrid');
+        const loadingHTML = `
+            <div class="loading-state col-span-full">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p>Loading analytics data...</p>
+            </div>
+        `;
+        metricsGrid.innerHTML = loadingHTML;
+    }
+    
+    function hideLoading() {
+        // Loading is hidden when metrics are updated
+    }
+    
+    function showError(message) {
+        const metricsGrid = document.getElementById('metricsGrid');
+        metricsGrid.innerHTML = `
+            <div class="no-data-state col-span-full">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>Error Loading Data</h4>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="loadAnalyticsData()">Retry</button>
+            </div>
+        `;
+    }
+    
+    function exportData(format) {
+        const params = new URLSearchParams({
+            period: currentPeriod,
+            export: format
+        });
+        
+        window.location.href = `/api/analytics/export/?${params.toString()}`;
+    }
+</script>
+{% endblock %}

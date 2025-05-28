@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - Content Moderation System{% endblock %}
+
+{% block public_content %}
+<div class="hero-section" style="background: var(--primary-gradient); color: white; padding: 5rem 0; text-align: center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-shield-alt"></i> AI-Powered Content Moderation
+                </h1>
+                <p class="lead mb-5">
+                    Protect your platform with advanced AI technology. Automatically detect and filter inappropriate text and images in real-time.
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4 py-3">
+                        <i class="fas fa-user-plus"></i> Get Started Free
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4 py-3">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-5">
+            <h2 class="display-6 fw-bold">Powerful Moderation Features</h2>
+            <p class="text-muted">Everything you need to keep your platform safe and clean</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-comments fa-3x" style="color: var(--primary-color);"></i>
+                    </div>
+                    <h5 class="card-title">Text Moderation</h5>
+                    <p class="card-text">
+                        Advanced NLP models detect toxicity, hate speech, profanity, and inappropriate content in text messages and comments.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-images fa-3x" style="color: var(--secondary-color);"></i>
+                    </div>
+                    <h5 class="card-title">Image Moderation</h5>
+                    <p class="card-text">
+                        Computer vision technology identifies explicit content, violence, weapons, and other inappropriate visual material.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-tachometer-alt fa-3x" style="color: var(--success-color);"></i>
+                    </div>
+                    <h5 class="card-title">Real-time API</h5>
+                    <p class="card-text">
+                        Lightning-fast API responses with comprehensive analytics and detailed moderation results for your applications.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row text-center py-5" style="background: var(--light-color); border-radius: 20px;">
+        <div class="col-md-3 mb-4">
+            <h3 class="display-5 fw-bold" style="color: var(--primary-color);">99.9%</h3>
+            <p class="text-muted">Uptime Guaranteed</p>
+        </div>
+        <div class="col-md-3 mb-4">
+            <h3 class="display-5 fw-bold" style="color: var(--primary-color);">< 100ms</h3>
+            <p class="text-muted">Average Response Time</p>
+        </div>
+        <div class="col-md-3 mb-4">
+            <h3 class="display-5 fw-bold" style="color: var(--primary-color);">1000+</h3>
+            <p class="text-muted">Free API Calls/Month</p>
+        </div>
+        <div class="col-md-3 mb-4">
+            <h3 class="display-5 fw-bold" style="color: var(--primary-color);">24/7</h3>
+            <p class="text-muted">Support Available</p>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="text-center py-5">
+        <h3 class="mb-4">Ready to Secure Your Platform?</h3>
+        <p class="text-muted mb-4">Join thousands of developers using our content moderation API</p>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 py-3">
+            <i class="fas fa-rocket"></i> Start Building Today
+        </a>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>') repeat;
+        opacity: 0.3;
+    }
+    
+    .hero-section .container {
+        position: relative;
+        z-index: 1;
+    }
+</style>
+{% endblock %}

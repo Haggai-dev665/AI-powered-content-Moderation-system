@@ -8,6 +8,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassifica
 import torch
 from typing import Dict, List
 import asyncio
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -88,9 +89,16 @@ class TextModerationModel:
             }
     
     def _check_profanity(self, text: str) -> float:
-        """Check for profanity using simple word matching"""
+        """Check for profanity using proper word boundary matching"""
         text_lower = text.lower()
-        found_words = [word for word in self.profanity_words if word in text_lower]
+        found_words = []
+        
+        # Use word boundaries to match whole words only
+        for word in self.profanity_words:
+            # \b ensures word boundaries (start and end of word)
+            pattern = r'\b' + re.escape(word) + r'\b'
+            if re.search(pattern, text_lower):
+                found_words.append(word)
         
         if found_words:
             # Simple scoring based on number of profane words

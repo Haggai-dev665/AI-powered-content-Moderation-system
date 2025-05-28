@@ -1,0 +1,1368 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}API Documentation - AI Content Moderation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .docs-header {
+        background: var(--gradient-primary);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+    
+    .docs-nav {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        position: sticky;
+        top: 20px;
+        z-index: 10;
+    }
+    
+    .docs-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .docs-nav a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .docs-nav a:hover, .docs-nav a.active {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .docs-section {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .docs-section h2 {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .docs-section h3 {
+        color: var(--primary-color);
+        margin: 2rem 0 1rem 0;
+        font-weight: 600;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(74, 144, 226, 0.2);
+    }
+    
+    .docs-section h4 {
+        color: var(--text-primary);
+        margin: 1.5rem 0 1rem 0;
+        font-weight: 600;
+    }
+    
+    .code-block {
+        background: #1e1e1e;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        overflow-x: auto;
+        border: 1px solid rgba(255,255,255,0.1);
+        position: relative;
+    }
+    
+    .code-block pre {
+        margin: 0;
+        color: #e0e6ed;
+        font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .code-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .copy-btn {
+        background: rgba(74, 144, 226, 0.2);
+        border: 1px solid var(--primary-color);
+        border-radius: 6px;
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .copy-btn:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .endpoint-card {
+        background: rgba(255,255,255,0.02);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .endpoint-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .method-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    
+    .method-post {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+    
+    .method-get {
+        background: rgba(74, 144, 226, 0.2);
+        color: #4a90e2;
+        border: 1px solid rgba(74, 144, 226, 0.3);
+    }
+    
+    .endpoint-url {
+        font-family: 'Fira Code', monospace;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    .params-table {
+        width: 100%;
+        margin: 1rem 0;
+        border-collapse: collapse;
+    }
+    
+    .params-table th,
+    .params-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .params-table th {
+        background: rgba(74, 144, 226, 0.1);
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .params-table td {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .param-name {
+        font-family: 'Fira Code', monospace;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    .param-type {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-family: 'Fira Code', monospace;
+    }
+    
+    .required-badge {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .optional-badge {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .response-example {
+        background: #0d1117;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 1px solid rgba(74, 144, 226, 0.2);
+    }
+    
+    .try-it-section {
+        background: rgba(74, 144, 226, 0.05);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border: 1px solid rgba(74, 144, 226, 0.1);
+    }
+    
+    .try-it-header {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control, .form-select {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        color: var(--text-primary);
+        padding: 0.75rem;
+        width: 100%;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        color: var(--text-primary);
+    }
+    
+    .try-btn {
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .try-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+    }
+    
+    .try-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .response-display {
+        background: #0d1117;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        min-height: 100px;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+        color: #e0e6ed;
+    }
+    
+    .sdk-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    
+    .sdk-card {
+        background: rgba(255,255,255,0.02);
+        border-radius: 10px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .sdk-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .sdk-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--gradient-primary);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .sdk-title {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .error-codes-table {
+        width: 100%;
+        margin: 1rem 0;
+        border-collapse: collapse;
+    }
+    
+    .error-codes-table th,
+    .error-codes-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .error-codes-table th {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        font-weight: 600;
+    }
+    
+    .error-code {
+        font-family: 'Fira Code', monospace;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .rate-limit-info {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .rate-limit-info h5 {
+        color: #ffc107;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sidebar-nav {
+        position: fixed;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--card-bg);
+        border-radius: 10px;
+        padding: 1rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: none;
+    }
+    
+    @media (min-width: 1200px) {
+        .sidebar-nav {
+            display: block;
+        }
+    }
+    
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .sidebar-nav a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 0.5rem;
+        display: block;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+    }
+    
+    .back-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .back-to-top:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+    }
+    
+    .highlight {
+        background: rgba(255, 193, 7, 0.1);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        color: #ffc107;
+        font-family: 'Fira Code', monospace;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="docs-header">
+        <h1><i class="fas fa-book me-3"></i>API Documentation</h1>
+        <p class="mb-0">Complete guide to integrating AI-powered content moderation</p>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="docs-nav">
+        <ul>
+            <li><a href="#overview" class="active">Overview</a></li>
+            <li><a href="#authentication">Authentication</a></li>
+            <li><a href="#text-moderation">Text Moderation</a></li>
+            <li><a href="#image-moderation">Image Moderation</a></li>
+            <li><a href="#sdks">SDKs & Libraries</a></li>
+            <li><a href="#errors">Error Codes</a></li>
+            <li><a href="#rate-limits">Rate Limits</a></li>
+        </ul>
+    </div>
+    
+    <!-- Overview Section -->
+    <div class="docs-section" id="overview">
+        <h2><i class="fas fa-info-circle me-2"></i>Overview</h2>
+        <p>Welcome to the AI Content Moderation API documentation. Our API provides advanced content moderation capabilities using state-of-the-art machine learning models to automatically detect and classify inappropriate content in both text and images.</p>
+        
+        <h3>Base URL</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-title">Production Endpoint</span>
+                <button class="copy-btn" onclick="copyToClipboard('https://api.contentmoderation.ai/v1')">Copy</button>
+            </div>
+            <pre>https://api.contentmoderation.ai/v1</pre>
+        </div>
+        
+        <h3>Content Types Supported</h3>
+        <ul>
+            <li><strong>Text Moderation:</strong> Toxicity, hate speech, profanity, spam detection</li>
+            <li><strong>Image Moderation:</strong> Explicit content, violence, weapons, unsafe content</li>
+        </ul>
+        
+        <h3>Key Features</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <ul>
+                    <li>Real-time content analysis</li>
+                    <li>High accuracy AI models</li>
+                    <li>Confidence scoring</li>
+                    <li>Detailed categorization</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul>
+                    <li>RESTful API design</li>
+                    <li>JSON request/response</li>
+                    <li>Comprehensive error handling</li>
+                    <li>Rate limiting & usage tracking</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Authentication Section -->
+    <div class="docs-section" id="authentication">
+        <h2><i class="fas fa-key me-2"></i>Authentication</h2>
+        <p>All API requests require authentication using an API key. Include your API key in the request headers.</p>
+        
+        <h3>API Key Header</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-title">Authorization Header</span>
+                <button class="copy-btn" onclick="copyToClipboard('X-API-Key: your_api_key_here')">Copy</button>
+            </div>
+            <pre>X-API-Key: your_api_key_here</pre>
+        </div>
+        
+        <h3>Getting Your API Key</h3>
+        <p>You can find your API key in your <a href="{% url 'api_keys' %}" class="text-primary">dashboard API keys section</a>. Keep your API key secure and never expose it in client-side code.</p>
+        
+        <div class="rate-limit-info">
+            <h5><i class="fas fa-exclamation-triangle me-2"></i>Security Note</h5>
+            <p class="mb-0">API keys should only be used in server-side applications. For client-side applications, implement a proxy endpoint on your server.</p>
+        </div>
+    </div>
+    
+    <!-- Text Moderation Section -->
+    <div class="docs-section" id="text-moderation">
+        <h2><i class="fas fa-comment me-2"></i>Text Moderation</h2>
+        <p>Analyze text content for toxicity, hate speech, profanity, and other inappropriate content.</p>
+        
+        <div class="endpoint-card">
+            <div class="endpoint-header">
+                <span class="method-badge method-post">POST</span>
+                <span class="endpoint-url">/moderate/text</span>
+            </div>
+            <p>Analyzes text content and returns a moderation decision with confidence scores.</p>
+            
+            <h4>Request Parameters</h4>
+            <table class="params-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="param-name">text</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td><span class="required-badge">Required</span></td>
+                        <td>The text content to moderate (max 10,000 characters)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="param-name">language</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td><span class="optional-badge">Optional</span></td>
+                        <td>Language code (default: auto-detect). Supported: en, es, fr, de, it</td>
+                    </tr>
+                    <tr>
+                        <td><span class="param-name">categories</span></td>
+                        <td><span class="param-type">array</span></td>
+                        <td><span class="optional-badge">Optional</span></td>
+                        <td>Specific categories to check: ["toxicity", "hate_speech", "profanity"]</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4>Example Request</h4>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-title">cURL</span>
+                    <button class="copy-btn" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy</button>
+                </div>
+                <pre>curl -X POST https://api.contentmoderation.ai/v1/moderate/text \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "text": "This is some text to moderate",
+    "language": "en",
+    "categories": ["toxicity", "hate_speech"]
+  }'</pre>
+            </div>
+            
+            <h4>Example Response</h4>
+            <div class="response-example">
+                <pre>{
+  "status": "success",
+  "result": {
+    "is_toxic": false,
+    "confidence": 0.923,
+    "categories": {
+      "toxicity": 0.045,
+      "hate_speech": 0.012,
+      "profanity": 0.003,
+      "spam": 0.089
+    },
+    "explanation": "Content appears to be safe and appropriate.",
+    "processing_time": 0.142
+  },
+  "metadata": {
+    "model_version": "v2.1.0",
+    "language_detected": "en",
+    "request_id": "req_123456789"
+  }
+}</pre>
+            </div>
+        </div>
+        
+        <!-- Try It Section -->
+        <div class="try-it-section">
+            <div class="try-it-header">
+                <i class="fas fa-play-circle"></i>
+                Try Text Moderation
+            </div>
+            <form id="textModerationForm">
+                <div class="form-group">
+                    <label for="textInput">Text to Moderate</label>
+                    <textarea id="textInput" class="form-control" rows="4" 
+                              placeholder="Enter text to moderate...">This is a sample text to test the moderation API.</textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="languageSelect">Language</label>
+                            <select id="languageSelect" class="form-select">
+                                <option value="">Auto-detect</option>
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="it">Italian</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Categories (select multiple)</label>
+                            <div class="mt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="toxicity" value="toxicity" checked>
+                                    <label class="form-check-label" for="toxicity">Toxicity</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="hate_speech" value="hate_speech" checked>
+                                    <label class="form-check-label" for="hate_speech">Hate Speech</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="profanity" value="profanity" checked>
+                                    <label class="form-check-label" for="profanity">Profanity</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="try-btn">
+                    <i class="fas fa-play me-2"></i>Test Text Moderation
+                </button>
+            </form>
+            <div id="textResponse" class="response-display" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Image Moderation Section -->
+    <div class="docs-section" id="image-moderation">
+        <h2><i class="fas fa-image me-2"></i>Image Moderation</h2>
+        <p>Analyze images for explicit content, violence, weapons, and other inappropriate visual content.</p>
+        
+        <div class="endpoint-card">
+            <div class="endpoint-header">
+                <span class="method-badge method-post">POST</span>
+                <span class="endpoint-url">/moderate/image</span>
+            </div>
+            <p>Analyzes image content and returns a moderation decision with detailed categorization.</p>
+            
+            <h4>Request Parameters</h4>
+            <table class="params-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="param-name">image</span></td>
+                        <td><span class="param-type">file</span></td>
+                        <td><span class="required-badge">Required</span></td>
+                        <td>Image file (JPEG, PNG, WebP, max 10MB)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="param-name">categories</span></td>
+                        <td><span class="param-type">array</span></td>
+                        <td><span class="optional-badge">Optional</span></td>
+                        <td>Categories: ["explicit", "violence", "weapons", "drugs"]</td>
+                    </tr>
+                    <tr>
+                        <td><span class="param-name">threshold</span></td>
+                        <td><span class="param-type">float</span></td>
+                        <td><span class="optional-badge">Optional</span></td>
+                        <td>Confidence threshold (0.0-1.0, default: 0.5)</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4>Example Request</h4>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-title">cURL with File Upload</span>
+                    <button class="copy-btn" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy</button>
+                </div>
+                <pre>curl -X POST https://api.contentmoderation.ai/v1/moderate/image \
+  -H "X-API-Key: your_api_key_here" \
+  -F "image=@/path/to/your/image.jpg" \
+  -F "categories=[\"explicit\",\"violence\"]" \
+  -F "threshold=0.7"</pre>
+            </div>
+            
+            <h4>Example Response</h4>
+            <div class="response-example">
+                <pre>{
+  "status": "success",
+  "result": {
+    "is_inappropriate": false,
+    "confidence": 0.876,
+    "categories": {
+      "explicit": 0.034,
+      "violence": 0.012,
+      "weapons": 0.008,
+      "drugs": 0.002
+    },
+    "detected_objects": [
+      {
+        "type": "person",
+        "confidence": 0.95,
+        "bbox": [120, 50, 300, 400]
+      }
+    ],
+    "explanation": "Image appears to contain safe content.",
+    "processing_time": 0.384
+  },
+  "metadata": {
+    "model_version": "v1.8.2",
+    "image_dimensions": [800, 600],
+    "file_size": 245760,
+    "request_id": "req_987654321"
+  }
+}</pre>
+            </div>
+        </div>
+        
+        <!-- Try It Section -->
+        <div class="try-it-section">
+            <div class="try-it-header">
+                <i class="fas fa-play-circle"></i>
+                Try Image Moderation
+            </div>
+            <form id="imageModerationForm">
+                <div class="form-group">
+                    <label for="imageInput">Select Image</label>
+                    <input type="file" id="imageInput" class="form-control" accept="image/*" required>
+                    <small class="form-text text-muted">Supported formats: JPEG, PNG, WebP (max 10MB)</small>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="thresholdInput">Confidence Threshold</label>
+                            <input type="range" id="thresholdInput" class="form-range" min="0" max="1" step="0.1" value="0.5">
+                            <div class="d-flex justify-content-between">
+                                <small>0.0</small>
+                                <small id="thresholdValue">0.5</small>
+                                <small>1.0</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Categories to Check</label>
+                            <div class="mt-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="explicit" value="explicit" checked>
+                                    <label class="form-check-label" for="explicit">Explicit Content</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="violence" value="violence" checked>
+                                    <label class="form-check-label" for="violence">Violence</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="weapons" value="weapons" checked>
+                                    <label class="form-check-label" for="weapons">Weapons</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="try-btn">
+                    <i class="fas fa-play me-2"></i>Test Image Moderation
+                </button>
+            </form>
+            <div id="imageResponse" class="response-display" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- SDKs Section -->
+    <div class="docs-section" id="sdks">
+        <h2><i class="fas fa-code me-2"></i>SDKs & Libraries</h2>
+        <p>Official SDKs and code examples in popular programming languages.</p>
+        
+        <div class="sdk-section">
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <h4 class="sdk-title">Python SDK</h4>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Installation</span>
+                        <button class="copy-btn" onclick="copyToClipboard('pip install content-moderation-api')">Copy</button>
+                    </div>
+                    <pre>pip install content-moderation-api</pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Usage Example</span>
+                        <button class="copy-btn" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy</button>
+                    </div>
+                    <pre>from content_moderation import ModerationClient
+
+client = ModerationClient(api_key="your_api_key")
+
+# Text moderation
+result = client.moderate_text("Your text here")
+print(f"Is toxic: {result.is_toxic}")
+print(f"Confidence: {result.confidence}")
+
+# Image moderation
+with open("image.jpg", "rb") as f:
+    result = client.moderate_image(f)
+    print(f"Is inappropriate: {result.is_inappropriate}")</pre>
+                </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">
+                        <i class="fab fa-js"></i>
+                    </div>
+                    <h4 class="sdk-title">JavaScript SDK</h4>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Installation</span>
+                        <button class="copy-btn" onclick="copyToClipboard('npm install content-moderation-api')">Copy</button>
+                    </div>
+                    <pre>npm install content-moderation-api</pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Usage Example</span>
+                        <button class="copy-btn" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy</button>
+                    </div>
+                    <pre>const { ModerationClient } = require('content-moderation-api');
+
+const client = new ModerationClient('your_api_key');
+
+// Text moderation
+const textResult = await client.moderateText('Your text here');
+console.log('Is toxic:', textResult.isToxic);
+
+// Image moderation
+const imageFile = document.getElementById('imageInput').files[0];
+const imageResult = await client.moderateImage(imageFile);
+console.log('Is inappropriate:', imageResult.isInappropriate);</pre>
+                </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">
+                        <i class="fab fa-php"></i>
+                    </div>
+                    <h4 class="sdk-title">PHP SDK</h4>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Installation</span>
+                        <button class="copy-btn" onclick="copyToClipboard('composer require content-moderation/api-client')">Copy</button>
+                    </div>
+                    <pre>composer require content-moderation/api-client</pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Usage Example</span>
+                        <button class="copy-btn" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy</button>
+                    </div>
+                    <pre><?php
+require_once 'vendor/autoload.php';
+
+use ContentModeration\Client;
+
+$client = new Client('your_api_key');
+
+// Text moderation
+$result = $client->moderateText('Your text here');
+echo "Is toxic: " . ($result->isToxic ? 'Yes' : 'No');
+
+// Image moderation
+$result = $client->moderateImage('/path/to/image.jpg');
+echo "Is inappropriate: " . ($result->isInappropriate ? 'Yes' : 'No');</pre>
+                </div>
+            </div>
+            
+            <div class="sdk-card">
+                <div class="sdk-header">
+                    <div class="sdk-icon">
+                        <i class="fab fa-java"></i>
+                    </div>
+                    <h4 class="sdk-title">Java SDK</h4>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Maven Dependency</span>
+                        <button class="copy-btn" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy</button>
+                    </div>
+                    <pre><dependency>
+    <groupId>com.contentmoderation</groupId>
+    <artifactId>api-client</artifactId>
+    <version>1.0.0</version>
+</dependency></pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Usage Example</span>
+                        <button class="copy-btn" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy</button>
+                    </div>
+                    <pre>import com.contentmoderation.ModerationClient;
+import com.contentmoderation.models.TextModerationResult;
+
+ModerationClient client = new ModerationClient("your_api_key");
+
+// Text moderation
+TextModerationResult result = client.moderateText("Your text here");
+System.out.println("Is toxic: " + result.isToxic());
+System.out.println("Confidence: " + result.confidence());
+
+// Image moderation
+File imageFile = new File("path/to/image.jpg");
+ImageModerationResult imageResult = client.moderateImage(imageFile);
+System.out.println("Is inappropriate: " + imageResult.isInappropriate());</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error Codes Section -->
+    <div class="docs-section" id="errors">
+        <h2><i class="fas fa-exclamation-triangle me-2"></i>Error Codes</h2>
+        <p>The API uses conventional HTTP response codes to indicate the success or failure of requests.</p>
+        
+        <table class="error-codes-table">
+            <thead>
+                <tr>
+                    <th>HTTP Code</th>
+                    <th>Error Code</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="error-code">200</span></td>
+                    <td>Success</td>
+                    <td>Request completed successfully</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">400</span></td>
+                    <td>INVALID_REQUEST</td>
+                    <td>The request was malformed or missing required parameters</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">401</span></td>
+                    <td>INVALID_API_KEY</td>
+                    <td>The API key is missing or invalid</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">403</span></td>
+                    <td>INSUFFICIENT_PERMISSIONS</td>
+                    <td>The API key doesn't have permission for this operation</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">413</span></td>
+                    <td>PAYLOAD_TOO_LARGE</td>
+                    <td>The request payload exceeds the maximum allowed size</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">422</span></td>
+                    <td>UNSUPPORTED_FORMAT</td>
+                    <td>The file format is not supported</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">429</span></td>
+                    <td>RATE_LIMIT_EXCEEDED</td>
+                    <td>Too many requests - rate limit exceeded</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">500</span></td>
+                    <td>INTERNAL_ERROR</td>
+                    <td>An internal server error occurred</td>
+                </tr>
+                <tr>
+                    <td><span class="error-code">503</span></td>
+                    <td>SERVICE_UNAVAILABLE</td>
+                    <td>The service is temporarily unavailable</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Error Response Format</h3>
+        <div class="response-example">
+            <pre>{
+  "status": "error",
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "The 'text' parameter is required for text moderation",
+    "details": {
+      "parameter": "text",
+      "provided": null,
+      "expected": "string"
+    }
+  },
+  "request_id": "req_error_123456"
+}</pre>
+        </div>
+    </div>
+    
+    <!-- Rate Limits Section -->
+    <div class="docs-section" id="rate-limits">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>Rate Limits</h2>
+        <p>To ensure fair usage and system stability, the API implements rate limiting based on your subscription plan.</p>
+        
+        <h3>Current Rate Limits</h3>
+        <table class="params-table">
+            <thead>
+                <tr>
+                    <th>Plan</th>
+                    <th>Requests per Minute</th>
+                    <th>Requests per Hour</th>
+                    <th>Monthly Quota</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Free</strong></td>
+                    <td>10</td>
+                    <td>100</td>
+                    <td>1,000</td>
+                </tr>
+                <tr>
+                    <td><strong>Basic</strong></td>
+                    <td>60</td>
+                    <td>1,000</td>
+                    <td>10,000</td>
+                </tr>
+                <tr>
+                    <td><strong>Pro</strong></td>
+                    <td>300</td>
+                    <td>5,000</td>
+                    <td>100,000</td>
+                </tr>
+                <tr>
+                    <td><strong>Enterprise</strong></td>
+                    <td>Custom</td>
+                    <td>Custom</td>
+                    <td>Custom</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Rate Limit Headers</h3>
+        <p>Every API response includes headers with rate limit information:</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-title">Response Headers</span>
+            </div>
+            <pre>X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1640995200
+X-RateLimit-Window: 60</pre>
+        </div>
+        
+        <ul>
+            <li><span class="highlight">X-RateLimit-Limit</span>: Maximum requests allowed in the current window</li>
+            <li><span class="highlight">X-RateLimit-Remaining</span>: Number of requests remaining in the current window</li>
+            <li><span class="highlight">X-RateLimit-Reset</span>: Unix timestamp when the rate limit window resets</li>
+            <li><span class="highlight">X-RateLimit-Window</span>: Duration of the rate limit window in seconds</li>
+        </ul>
+        
+        <div class="rate-limit-info">
+            <h5><i class="fas fa-lightbulb me-2"></i>Best Practices</h5>
+            <ul class="mb-0">
+                <li>Monitor the rate limit headers in your responses</li>
+                <li>Implement exponential backoff for retries</li>
+                <li>Cache results when possible to reduce API calls</li>
+                <li>Contact support if you need higher limits</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Navigation (for larger screens) -->
+<div class="sidebar-nav">
+    <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#authentication">Auth</a></li>
+        <li><a href="#text-moderation">Text API</a></li>
+        <li><a href="#image-moderation">Image API</a></li>
+        <li><a href="#sdks">SDKs</a></li>
+        <li><a href="#errors">Errors</a></li>
+        <li><a href="#rate-limits">Limits</a></li>
+    </ul>
+</div>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" onclick="scrollToTop()">
+    <i class="fas fa-arrow-up"></i>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDocumentation();
+        setupFormHandlers();
+        setupScrollHandlers();
+    });
+    
+    function initializeDocumentation() {
+        // Update threshold display
+        const thresholdInput = document.getElementById('thresholdInput');
+        const thresholdValue = document.getElementById('thresholdValue');
+        
+        if (thresholdInput && thresholdValue) {
+            thresholdInput.addEventListener('input', function() {
+                thresholdValue.textContent = this.value;
+            });
+        }
+        
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    updateActiveNav(this.getAttribute('href'));
+                }
+            });
+        });
+    }
+    
+    function setupFormHandlers() {
+        // Text moderation form
+        const textForm = document.getElementById('textModerationForm');
+        if (textForm) {
+            textForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                testTextModeration();
+            });
+        }
+        
+        // Image moderation form
+        const imageForm = document.getElementById('imageModerationForm');
+        if (imageForm) {
+            imageForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                testImageModeration();
+            });
+        }
+    }
+    
+    function setupScrollHandlers() {
+        const backToTopBtn = document.querySelector('.back-to-top');
+        
+        window.addEventListener('scroll', function() {
+            // Show/hide back to top button
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+            
+            // Update active navigation
+            updateActiveNavOnScroll();
+        });
+    }
+    
+    function testTextModeration() {
+        const textInput = document.getElementById('textInput');
+        const languageSelect = document.getElementById('languageSelect');
+        const responseDiv = document.getElementById('textResponse');
+        const submitBtn = textForm.querySelector('.try-btn');
+        
+        // Get selected categories
+        const categories = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+        
+        const data = {
+            text: textInput.value,
+            language: languageSelect.value || null,
+            categories: categories
+        };
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+        responseDiv.style.display = 'block';
+        responseDiv.textContent = 'Sending request...';
+        
+        fetch('/api/test/text/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+            responseDiv.textContent = `Error: ${error.message}`;
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-play me-2"></i>Test Text Moderation';
+        });
+    }
+    
+    function testImageModeration() {
+        const imageInput = document.getElementById('imageInput');
+        const thresholdInput = document.getElementById('thresholdInput');
+        const responseDiv = document.getElementById('imageResponse');
+        const submitBtn = imageForm.querySelector('.try-btn');
+        
+        if (!imageInput.files[0]) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        // Get selected categories
+        const categories = Array.from(document.querySelectorAll('#imageModerationForm input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+        
+        const formData = new FormData();
+        formData.append('image', imageInput.files[0]);
+        formData.append('threshold', thresholdInput.value);
+        formData.append('categories', JSON.stringify(categories));
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+        responseDiv.style.display = 'block';
+        responseDiv.textContent = 'Uploading and analyzing image...';
+        
+        fetch('/api/test/image/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+            responseDiv.textContent = `Error: ${error.message}`;
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-play me-2"></i>Test Image Moderation';
+        });
+    }
+    
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Show temporary success message
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.style.background = 'rgba(40, 167, 69, 0.3)';
+            btn.style.borderColor = '#28a745';
+            btn.style.color = '#28a745';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+            }, 2000);
+        });
+    }
+    
+    function updateActiveNav(hash) {
+        document.querySelectorAll('.docs-nav a, .sidebar-nav a').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === hash) {
+                link.classList.add('active');
+            }
+        });
+    }
+    
+    function updateActiveNavOnScroll() {
+        const sections = document.querySelectorAll('.docs-section');
+        const scrollPos = window.pageYOffset + 100;
+        
+        sections.forEach(section => {
+            const top = section.offsetTop;
+            const bottom = top + section.offsetHeight;
+            const id = section.getAttribute('id');
+            
+            if (scrollPos >= top && scrollPos <= bottom) {
+                updateActiveNav('#' + id);
+            }
+        });
+    }
+    
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Test Moderation{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Text Moderation -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-comment-alt"></i> Text Moderation</h5>
+            </div>
+            <div class="card-body">
+                <form id="textModerationForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Text Content</label>
+                        <textarea class="form-control" id="textContent" rows="5" 
+                                placeholder="Enter text to moderate..." required></textarea>
+                        <div class="form-text">Enter any text content to check for inappropriate material.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">User ID (Optional)</label>
+                        <input type="text" class="form-control" id="textUserId" 
+                               placeholder="Optional user identifier">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Moderate Text
+                    </button>
+                </form>
+                
+                <div id="textLoadingSpinner" class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-2">Analyzing text content...</p>
+                </div>
+                
+                <div id="textResult" class="result-card">
+                    <div class="card mt-3">
+                        <div class="card-header" id="textResultHeader">
+                            <h6 class="mb-0">Moderation Result</h6>
+                        </div>
+                        <div class="card-body" id="textResultBody">
+                            <!-- Results will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Moderation -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-image"></i> Image Moderation</h5>
+            </div>
+            <div class="card-body">
+                <form id="imageModerationForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Image File</label>
+                        <input type="file" class="form-control" id="imageFile" 
+                               accept="image/*" required>
+                        <div class="form-text">Upload JPEG, PNG, GIF, BMP, or WEBP (max 10MB)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">User ID (Optional)</label>
+                        <input type="text" class="form-control" id="imageUserId" 
+                               placeholder="Optional user identifier">
+                    </div>
+                    <div id="imagePreview" class="mb-3" style="display: none;">
+                        <img id="previewImg" class="img-fluid rounded" style="max-height: 200px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Moderate Image
+                    </button>
+                </form>
+                
+                <div id="imageLoadingSpinner" class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-2">Analyzing image content...</p>
+                </div>
+                
+                <div id="imageResult" class="result-card">
+                    <div class="card mt-3">
+                        <div class="card-header" id="imageResultHeader">
+                            <h6 class="mb-0">Moderation Result</h6>
+                        </div>
+                        <div class="card-body" id="imageResultBody">
+                            <!-- Results will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Test Cases -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-flask"></i> Sample Test Cases</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Text Examples:</h6>
+                        <div class="mb-2">
+                            <button class="btn btn-sm btn-outline-success me-2" onclick="fillTextExample('Hello, this is a nice and friendly message!')">
+                                Clean Text
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning me-2" onclick="fillTextExample('You are such an idiot and I hate you!')">
+                                Toxic Text
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="fillTextExample('This damn thing is so fucking annoying!')">
+                                Profanity
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Image Guidelines:</h6>
+                        <small class="text-muted">
+                            Test with various image types: landscapes (safe), red/dark images (may trigger violence detection), 
+                            skin-tone dominant images (may trigger explicit content detection).
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Text Moderation Form
+    document.getElementById('textModerationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        moderateText();
+    });
+
+    // Image Moderation Form
+    document.getElementById('imageModerationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        moderateImage();
+    });
+
+    // Image preview
+    document.getElementById('imageFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+    });
+});
+
+function moderateText() {
+    const textContent = document.getElementById('textContent').value;
+    const userId = document.getElementById('textUserId').value;
+    
+    if (!textContent.trim()) {
+        alert('Please enter some text to moderate.');
+        return;
+    }
+
+    // Show loading
+    document.getElementById('textLoadingSpinner').style.display = 'block';
+    document.getElementById('textResult').style.display = 'none';
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('text_content', textContent);
+    formData.append('user_id', userId);
+    formData.append('csrfmiddlewaretoken', csrftoken);
+
+    fetch('{% url "test_text_moderation" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrftoken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('textLoadingSpinner').style.display = 'none';
+        displayTextResult(data);
+    })
+    .catch(error => {
+        document.getElementById('textLoadingSpinner').style.display = 'none';
+        console.error('Error:', error);
+        alert('An error occurred while processing the text.');
+    });
+}
+
+function moderateImage() {
+    const imageFile = document.getElementById('imageFile').files[0];
+    const userId = document.getElementById('imageUserId').value;
+    
+    if (!imageFile) {
+        alert('Please select an image file.');
+        return;
+    }
+
+    // Show loading
+    document.getElementById('imageLoadingSpinner').style.display = 'block';
+    document.getElementById('imageResult').style.display = 'none';
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('image_file', imageFile);
+    formData.append('user_id', userId);
+    formData.append('csrfmiddlewaretoken', csrftoken);
+
+    fetch('{% url "test_image_moderation" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrftoken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('imageLoadingSpinner').style.display = 'none';
+        displayImageResult(data);
+    })
+    .catch(error => {
+        document.getElementById('imageLoadingSpinner').style.display = 'none';
+        console.error('Error:', error);
+        alert('An error occurred while processing the image.');
+    });
+}
+
+function displayTextResult(data) {
+    const resultDiv = document.getElementById('textResult');
+    const headerDiv = document.getElementById('textResultHeader');
+    const bodyDiv = document.getElementById('textResultBody');
+
+    if (data.success) {
+        const result = data.result;
+        const isAppropriate = result.is_appropriate;
+        
+        headerDiv.innerHTML = `
+            <h6 class="mb-0">
+                <span class="badge ${isAppropriate ? 'bg-success' : 'bg-danger'} me-2">
+                    ${isAppropriate ? 'APPROPRIATE' : 'FLAGGED'}
+                </span>
+                Moderation Result
+            </h6>
+        `;
+
+        let categoriesHtml = '';
+        if (result.flagged_categories && result.flagged_categories.length > 0) {
+            categoriesHtml = result.flagged_categories.map(cat => 
+                `<span class="category-tag">${cat}</span>`
+            ).join('');
+        }
+
+        bodyDiv.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Confidence Score:</strong><br>
+                    <span class="h5 ${isAppropriate ? 'text-success' : 'text-danger'}">
+                        ${(result.confidence_score * 100).toFixed(1)}%
+                    </span>
+                </div>
+                <div class="col-md-6">
+                    <strong>Processing Time:</strong><br>
+                    <span class="text-muted">${data.processing_time}ms</span>
+                </div>
+            </div>
+            ${categoriesHtml ? `<div class="mt-3"><strong>Flagged Categories:</strong><br>${categoriesHtml}</div>` : ''}
+            <div class="mt-3">
+                <small class="text-muted">Request ID: ${data.request_id}</small>
+            </div>
+        `;
+    } else {
+        headerDiv.innerHTML = '<h6 class="mb-0 text-danger">Error</h6>';
+        bodyDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    }
+
+    resultDiv.style.display = 'block';
+}
+
+function displayImageResult(data) {
+    const resultDiv = document.getElementById('imageResult');
+    const headerDiv = document.getElementById('imageResultHeader');
+    const bodyDiv = document.getElementById('imageResultBody');
+
+    if (data.success) {
+        const result = data.result;
+        const isAppropriate = result.is_appropriate;
+        
+        headerDiv.innerHTML = `
+            <h6 class="mb-0">
+                <span class="badge ${isAppropriate ? 'bg-success' : 'bg-danger'} me-2">
+                    ${isAppropriate ? 'APPROPRIATE' : 'FLAGGED'}
+                </span>
+                Moderation Result
+            </h6>
+        `;
+
+        let categoriesHtml = '';
+        if (result.flagged_categories && result.flagged_categories.length > 0) {
+            categoriesHtml = result.flagged_categories.map(cat => 
+                `<span class="category-tag">${cat}</span>`
+            ).join('');
+        }
+
+        const imageInfo = result.image_info || {};
+        
+        bodyDiv.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Confidence Score:</strong><br>
+                    <span class="h5 ${isAppropriate ? 'text-success' : 'text-danger'}">
+                        ${(result.confidence_score * 100).toFixed(1)}%
+                    </span>
+                </div>
+                <div class="col-md-6">
+                    <strong>Processing Time:</strong><br>
+                    <span class="text-muted">${data.processing_time}ms</span>
+                </div>
+            </div>
+            ${categoriesHtml ? `<div class="mt-3"><strong>Flagged Categories:</strong><br>${categoriesHtml}</div>` : ''}
+            <div class="mt-3">
+                <strong>Image Information:</strong><br>
+                <small class="text-muted">
+                    ${imageInfo.width}x${imageInfo.height} ${imageInfo.format}, 
+                    ${(imageInfo.file_size_mb * 1024).toFixed(1)}KB
+                </small>
+            </div>
+            <div class="mt-3">
+                <small class="text-muted">Request ID: ${data.request_id}</small>
+            </div>
+        `;
+    } else {
+        headerDiv.innerHTML = '<h6 class="mb-0 text-danger">Error</h6>';
+        bodyDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    }
+
+    resultDiv.style.display = 'block';
+}
+
+function fillTextExample(text) {
+    document.getElementById('textContent').value = text;
+}
+</script>
+{% endblock %}
