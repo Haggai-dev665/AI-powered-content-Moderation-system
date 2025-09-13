@@ -1,0 +1,30 @@
+[package]
+name = "rust-moderation"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rust_moderation"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# For Python bindings
+pyo3 = { version = "0.20", features = ["extension-module"], optional = true }
+
+# For regex processing
+regex = "1.10"
+rayon = "1.8"  # for parallel processing
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# For image processing
+image = "0.24"
+imageproc = "0.23"
+
+# For text processing
+unicode-normalization = "0.1"
+unicode-segmentation = "1.10"
+
+[features]
+default = ["python-bindings"]
+python-bindings = ["pyo3"]
