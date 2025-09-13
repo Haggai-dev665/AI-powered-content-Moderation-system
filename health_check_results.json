@@ -1,0 +1,22 @@
+{
+  "timestamp": 1757763416.107824,
+  "services": {
+    "gateway": {
+      "service": "gateway",
+      "status": "unreachable",
+      "error": "Connection refused"
+    },
+    "text-moderation": {
+      "service": "text-moderation",
+      "status": "unreachable",
+      "error": "Connection refused"
+    },
+    "image-moderation": {
+      "service": "image-moderation",
+      "status": "unreachable",
+      "error": "Connection refused"
+    }
+  },
+  "tests": {},
+  "overall_status": "unhealthy"
+}
